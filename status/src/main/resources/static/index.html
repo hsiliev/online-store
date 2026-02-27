@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Status</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+    <h1>Completed Orders</h1>
+    <ul id="orders"></ul>
+
+    <script>
+        var socket = new SockJS('/ws');
+        var stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/orders', function (message) {
+                var order = JSON.parse(message.body);
+                var li = document.createElement('li');
+                li.appendChild(document.createTextNode(order.message));
+                document.getElementById('orders').appendChild(li);
+            });
+        });
+    </script>
+</body>
+</html>

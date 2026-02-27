@@ -7,3 +7,7 @@
  */
 
 rootProject.name = "online-store"
+include("common")
+include("store")
+include("shop")
+include("status")
