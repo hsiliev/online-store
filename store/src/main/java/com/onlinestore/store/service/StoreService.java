@@ -1,4 +1,4 @@
-package com.onlinestore.store;
+package com.onlinestore.store.service;
 
 import com.onlinestore.common.RabbitMQConfig;
 import com.onlinestore.common.StockChangedEvent;
@@ -41,8 +41,14 @@ public class StoreService {
 
         List<Demand> result = new ArrayList<>();
         for (Demand demand : demands) {
-            var qty = Math.max(0, demand.getQuantityInDemand() - quantityByProductId.getOrDefault(demand.getProductId(), 0));
-            result.add(new Demand(demand.getProductId(), qty));
+            long productId = demand.getProductId();
+            int demanded = demand.getQuantityInDemand();
+            int available = quantityByProductId.getOrDefault(productId, 0);
+
+            int deficit = demanded - available;
+            if (deficit > 0) {
+                result.add(new Demand(productId, deficit));
+            }
         }
         return result;
     }
@@ -54,7 +60,6 @@ public class StoreService {
             demandRepository.save(new Demand(productId, 0));
         }
         productRepository.incrementStock(productId, quantity);
-        demandRepository.decrementDemand(productId, quantity);
         notifyStockChanged(productId);
     }
 

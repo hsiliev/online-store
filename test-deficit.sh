@@ -42,20 +42,57 @@ else
     exit 1
 fi
 
-echo -e "\nStock 20 chocolates and 10 bananas in the Store"
-curl -s -X POST "$STORE_URL/stock" -H "Content-Type: application/json" -d '{"productId": 1, "quantity": 20}'
-curl -s -X POST "$STORE_URL/stock" -H "Content-Type: application/json" -d '{"productId": 2, "quantity": 10}'
+echo -e "\nStock 10 chocolates and 5 bananas in the Store"
+curl -s -X POST "$STORE_URL/stock" -H "Content-Type: application/json" -d '{"productId": 1, "quantity": 10}'
+curl -s -X POST "$STORE_URL/stock" -H "Content-Type: application/json" -d '{"productId": 2, "quantity": 5}'
 echo ""
 
 sleep 2
 
-echo -e "\nCheck we have 2 chocolates and 3 bananas in the Store"
+echo -e "\nCheck we have 2 chocolates and 8 bananas in the Store"
+STOCK=$(curl -s "$STORE_URL/stock")
+echo "$STOCK"
+if [[ "$STOCK" == *"\"id\":1,\"name\":\"chocolate\",\"quantity\":2"* ]] && [[ "$STOCK" == *"\"id\":2,\"name\":\"banana\",\"quantity\":8"* ]]; then
+    echo ""
+else
+    echo "Stock check FAILED"
+    exit 1
+fi
+
+echo -e "\nCheck that demand is 8 chocolates and 2 bananas"
+DEMAND=$(curl -s "$STORE_URL/demand")
+echo "$DEMAND"
+if [[ "$DEMAND" == *"\"productId\":1,\"quantityInDemand\":8"* ]] && [[ "$DEMAND" == *"\"productId\":2,\"quantityInDemand\":2"* ]]; then
+    echo ""
+else
+    echo "Demand check FAILED"
+    exit 1
+fi
+
+echo -e "\nStock another batch of 10 chocolates and 5 bananas in the Store"
+curl -s -X POST "$STORE_URL/stock" -H "Content-Type: application/json" -d '{"productId": 1, "quantity": 10}'
+curl -s -X POST "$STORE_URL/stock" -H "Content-Type: application/json" -d '{"productId": 2, "quantity": 5}'
+echo ""
+
+sleep 2
+
+echo -e "\nCheck that no demand exists"
+DEMAND=$(curl -s "$STORE_URL/demand")
+echo "$DEMAND"
+if [[ "$DEMAND" == "[]" ]]; then
+    echo ""
+else
+    echo "Demand check FAILED"
+    exit 1
+fi
+
+echo -e "\nCheck the stock is 2 chocolates and 3 bananas in the Store"
 STOCK=$(curl -s "$STORE_URL/stock")
 echo "$STOCK"
 if [[ "$STOCK" == *"\"id\":1,\"name\":\"chocolate\",\"quantity\":2"* ]] && [[ "$STOCK" == *"\"id\":2,\"name\":\"banana\",\"quantity\":3"* ]]; then
     echo ""
 else
-    echo "Final Stock check FAILED"
+    echo "Stock check FAILED"
     exit 1
 fi
 

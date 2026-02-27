@@ -1,7 +1,10 @@
-package com.onlinestore.store;
+package com.onlinestore.store.controller;
 
+import com.onlinestore.store.dto.ProductQuantityRequest;
+import com.onlinestore.store.dto.StockRequest;
 import com.onlinestore.store.persistence.Demand;
 import com.onlinestore.store.persistence.Product;
+import com.onlinestore.store.service.StoreService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,8 +49,4 @@ public class StoreController {
             return ResponseEntity.notFound().build();
         }
     }
-
-    public record StockRequest(Long productId, String productName, Integer quantity) {}
-
-    public record ProductQuantityRequest(Long productId, Integer quantity) {}
 }

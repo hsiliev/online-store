@@ -1,7 +1,8 @@
-package com.onlinestore.shop;
+package com.onlinestore.shop.listener;
 
 import com.onlinestore.common.RabbitMQConfig;
 import com.onlinestore.common.StockChangedEvent;
+import com.onlinestore.shop.service.ShopService;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 

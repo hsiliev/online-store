@@ -18,6 +18,4 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Modifying
     @Query("UPDATE Product p SET p.quantity = p.quantity - :quantity WHERE p.id = :productId AND p.quantity >= :quantity")
     int decrementStock(Long productId, Integer quantity);
-
-    Optional<Product> findByName(String name);
 }

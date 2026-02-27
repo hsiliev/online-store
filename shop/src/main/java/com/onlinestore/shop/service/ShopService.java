@@ -1,7 +1,10 @@
-package com.onlinestore.shop;
+package com.onlinestore.shop.service;
 
 import com.onlinestore.common.OrderCompletedEvent;
 import com.onlinestore.common.RabbitMQConfig;
+import com.onlinestore.shop.dto.DemandRequest;
+import com.onlinestore.shop.dto.OrderItemRequest;
+import com.onlinestore.shop.dto.StockTakeRequest;
 import com.onlinestore.shop.persistence.Order;
 import com.onlinestore.shop.persistence.OrderItem;
 import com.onlinestore.shop.persistence.OrderRepository;
@@ -83,9 +86,4 @@ public class ShopService {
         rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.ORDER_COMPLETED_ROUTING_KEY,
             new OrderCompletedEvent(order.getId(), "Order " + order.getId() + " completed"));
     }
-
-    public record OrderItemRequest(Long productId, Integer quantity) {}
-    public record DemandRequest(Long productId, Integer quantity) {}
-    public record StockTakeRequest(Long productId, Integer quantity) {}
-    public record ProductDTO(Long id, String name, Integer quantity) {}
 }

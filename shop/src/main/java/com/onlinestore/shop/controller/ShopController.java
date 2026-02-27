@@ -1,5 +1,7 @@
-package com.onlinestore.shop;
+package com.onlinestore.shop.controller;
 
+import com.onlinestore.shop.dto.OrderItemRequest;
+import com.onlinestore.shop.service.ShopService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +18,7 @@ public class ShopController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> createOrder(@RequestBody List<ShopService.OrderItemRequest> items) {
+    public ResponseEntity<Void> createOrder(@RequestBody List<OrderItemRequest> items) {
         shopService.createOrder(items);
         return ResponseEntity.accepted().build();
     }

@@ -2,8 +2,10 @@ package com.onlinestore.shop;
 
 import com.onlinestore.common.OrderCompletedEvent;
 import com.onlinestore.common.RabbitMQConfig;
+import com.onlinestore.shop.dto.OrderItemRequest;
 import com.onlinestore.shop.persistence.Order;
 import com.onlinestore.shop.persistence.OrderRepository;
+import com.onlinestore.shop.service.ShopService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -55,7 +57,7 @@ class ShopServiceTest {
         when(restTemplate.postForObject(endsWith("/demand"), any(), eq(Void.class)))
                 .thenReturn(null);
 
-        shopService.createOrder(List.of(new ShopService.OrderItemRequest(productId, quantity)));
+        shopService.createOrder(List.of(new OrderItemRequest(productId, quantity)));
 
         List<Order> orders = orderRepository.findAll();
         assertEquals(1, orders.size());
@@ -78,7 +80,7 @@ class ShopServiceTest {
         when(restTemplate.postForObject(endsWith("/stock/take"), any(), eq(Void.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
-        shopService.createOrder(List.of(new ShopService.OrderItemRequest(productId, quantity)));
+        shopService.createOrder(List.of(new OrderItemRequest(productId, quantity)));
 
         List<Order> orders = orderRepository.findAll();
         assertEquals(1, orders.size());
@@ -100,7 +102,7 @@ class ShopServiceTest {
         when(restTemplate.postForObject(endsWith("/stock/take"), any(), eq(Void.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
-        shopService.createOrder(List.of(new ShopService.OrderItemRequest(productId, quantity)));
+        shopService.createOrder(List.of(new OrderItemRequest(productId, quantity)));
 
         List<Order> orders = orderRepository.findAll();
         assertFalse(orders.get(0).isCompleted());
@@ -129,7 +131,7 @@ class ShopServiceTest {
         when(restTemplate.postForObject(endsWith("/stock/take"), any(), eq(Void.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
-        shopService.createOrder(List.of(new ShopService.OrderItemRequest(productId, quantity)));
+        shopService.createOrder(List.of(new OrderItemRequest(productId, quantity)));
 
         List<Order> orders = orderRepository.findAll();
         assertFalse(orders.get(0).isCompleted());
