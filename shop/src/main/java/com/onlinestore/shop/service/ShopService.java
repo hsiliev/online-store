@@ -45,13 +45,15 @@ public class ShopService {
         order.setCompleted(false);
         order = orderRepository.save(order);
 
-        // Notify store about demand
-        for (OrderItemRequest item : items) {
-            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.DEMAND_CREATED_ROUTING_KEY,
-                new DemandCreatedEvent(item.productId(), item.quantity()));
-        }
-
         tryCompleteOrder(order);
+
+        if (!order.isCompleted()) {
+            // Notify store about demand
+            for (OrderItemRequest item : items) {
+                rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.DEMAND_CREATED_ROUTING_KEY,
+                    new DemandCreatedEvent(item.productId(), item.quantity()));
+            }
+        }
     }
 
     @Transactional

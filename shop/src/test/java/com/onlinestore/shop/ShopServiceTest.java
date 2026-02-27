@@ -62,7 +62,7 @@ class ShopServiceTest {
         assertTrue(orders.get(0).isCompleted());
 
         verify(rabbitTemplate).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.ORDER_COMPLETED_ROUTING_KEY), any(OrderCompletedEvent.class));
-        verify(rabbitTemplate).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.DEMAND_CREATED_ROUTING_KEY), any(DemandCreatedEvent.class));
+        verify(rabbitTemplate, never()).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.DEMAND_CREATED_ROUTING_KEY), any(DemandCreatedEvent.class));
         verify(restTemplate, times(1)).postForObject(endsWith("/stock/take-all"), any(), eq(Void.class));
     }
 
