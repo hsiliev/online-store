@@ -26,7 +26,7 @@ graph TD
     DB[(PostgreSQL)]
     
     User -->|POST /order| Shop
-    Shop -->|REST: POST /demand| Store
+    Shop -->|DemandCreatedEvent| MQ
     Shop -->|REST: POST /stock/take| Store
     Shop -.->|Orders| DB
     
@@ -34,6 +34,7 @@ graph TD
     Store -->|StockChangedEvent| MQ
     
     MQ -->|StockChangedEvent| Shop
+    MQ -->|DemandCreatedEvent| Store
     
     Shop -->|OrderCompletedEvent| MQ
     MQ -->|OrderCompletedEvent| Status

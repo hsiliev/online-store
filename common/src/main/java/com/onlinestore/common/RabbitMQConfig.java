@@ -14,8 +14,10 @@ public class RabbitMQConfig {
     public static final String EXCHANGE_NAME = "online-store-exchange";
     public static final String STOCK_CHANGED_QUEUE = "stock-changed-queue";
     public static final String ORDER_COMPLETED_QUEUE = "order-completed-queue";
+    public static final String DEMAND_CREATED_QUEUE = "demand-created-queue";
     public static final String STOCK_CHANGED_ROUTING_KEY = "stock.changed";
     public static final String ORDER_COMPLETED_ROUTING_KEY = "order.completed";
+    public static final String DEMAND_CREATED_ROUTING_KEY = "demand.created";
 
     @Bean
     public TopicExchange exchange() {
@@ -33,6 +35,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue demandCreatedQueue() {
+        return new Queue(DEMAND_CREATED_QUEUE);
+    }
+
+    @Bean
     public Binding stockChangedBinding(Queue stockChangedQueue, TopicExchange exchange) {
         return BindingBuilder.bind(stockChangedQueue).to(exchange).with(STOCK_CHANGED_ROUTING_KEY);
     }
@@ -40,6 +47,11 @@ public class RabbitMQConfig {
     @Bean
     public Binding orderCompletedBinding(Queue orderCompletedQueue, TopicExchange exchange) {
         return BindingBuilder.bind(orderCompletedQueue).to(exchange).with(ORDER_COMPLETED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding demandCreatedBinding(Queue demandCreatedQueue, TopicExchange exchange) {
+        return BindingBuilder.bind(demandCreatedQueue).to(exchange).with(DEMAND_CREATED_ROUTING_KEY);
     }
 
     @Bean

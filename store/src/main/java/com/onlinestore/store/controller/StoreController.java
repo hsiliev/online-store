@@ -35,11 +35,6 @@ public class StoreController {
         storeService.stockProduct(request.productId(), request.productName(), request.quantity());
     }
 
-    @PostMapping("/demand")
-    public void postDemand(@RequestBody ProductQuantityRequest request) {
-        storeService.addDemand(request.productId(), request.quantity());
-    }
-
     @PostMapping("/stock/take")
     public ResponseEntity<Void> takeStock(@RequestBody ProductQuantityRequest request) {
         boolean success = storeService.takeProduct(request.productId(), request.quantity());

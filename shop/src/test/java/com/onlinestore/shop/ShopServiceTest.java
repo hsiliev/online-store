@@ -1,5 +1,6 @@
 package com.onlinestore.shop;
 
+import com.onlinestore.common.DemandCreatedEvent;
 import com.onlinestore.common.OrderCompletedEvent;
 import com.onlinestore.common.RabbitMQConfig;
 import com.onlinestore.shop.dto.OrderItemRequest;
@@ -53,9 +54,6 @@ class ShopServiceTest {
         // Mock store stock success for take
         when(restTemplate.postForObject(endsWith("/stock/take"), any(), eq(Void.class)))
                 .thenReturn(null);
-        // Mock demand success
-        when(restTemplate.postForObject(endsWith("/demand"), any(), eq(Void.class)))
-                .thenReturn(null);
 
         shopService.createOrder(List.of(new OrderItemRequest(productId, quantity)));
 
@@ -64,7 +62,7 @@ class ShopServiceTest {
         assertTrue(orders.get(0).isCompleted());
 
         verify(rabbitTemplate).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.ORDER_COMPLETED_ROUTING_KEY), any(OrderCompletedEvent.class));
-        verify(restTemplate, times(1)).postForObject(endsWith("/demand"), any(), eq(Void.class));
+        verify(rabbitTemplate).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.DEMAND_CREATED_ROUTING_KEY), any(DemandCreatedEvent.class));
         verify(restTemplate, times(1)).postForObject(endsWith("/stock/take"), any(), eq(Void.class));
     }
 
@@ -73,9 +71,6 @@ class ShopServiceTest {
         Long productId = 1L;
         Integer quantity = 2;
 
-        // Mock demand success
-        when(restTemplate.postForObject(endsWith("/demand"), any(), eq(Void.class)))
-                .thenReturn(null);
         // Mock stock take failure (404)
         when(restTemplate.postForObject(endsWith("/stock/take"), any(), eq(Void.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
@@ -86,8 +81,8 @@ class ShopServiceTest {
         assertEquals(1, orders.size());
         assertFalse(orders.get(0).isCompleted());
 
-        verify(rabbitTemplate, never()).convertAndSend(anyString(), anyString(), any(OrderCompletedEvent.class));
-        verify(restTemplate, times(1)).postForObject(endsWith("/demand"), any(), eq(Void.class));
+        verify(rabbitTemplate, never()).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.ORDER_COMPLETED_ROUTING_KEY), any(OrderCompletedEvent.class));
+        verify(rabbitTemplate).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.DEMAND_CREATED_ROUTING_KEY), any(DemandCreatedEvent.class));
         verify(restTemplate, times(1)).postForObject(endsWith("/stock/take"), any(), eq(Void.class));
     }
 
@@ -97,8 +92,6 @@ class ShopServiceTest {
         Integer quantity = 2;
 
         // Create a pending order - first attempt fails
-        when(restTemplate.postForObject(endsWith("/demand"), any(), eq(Void.class)))
-                .thenReturn(null);
         when(restTemplate.postForObject(endsWith("/stock/take"), any(), eq(Void.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
@@ -124,9 +117,6 @@ class ShopServiceTest {
         Long productId = 1L;
         Integer quantity = 2;
 
-        // Mock demand success
-        when(restTemplate.postForObject(endsWith("/demand"), any(), eq(Void.class)))
-                .thenReturn(null);
         // Stock take fails with 404
         when(restTemplate.postForObject(endsWith("/stock/take"), any(), eq(Void.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));

@@ -1,8 +1,8 @@
 package com.onlinestore.shop.service;
 
+import com.onlinestore.common.DemandCreatedEvent;
 import com.onlinestore.common.OrderCompletedEvent;
 import com.onlinestore.common.RabbitMQConfig;
-import com.onlinestore.shop.dto.DemandRequest;
 import com.onlinestore.shop.dto.OrderItemRequest;
 import com.onlinestore.shop.dto.StockTakeRequest;
 import com.onlinestore.shop.persistence.Order;
@@ -47,7 +47,8 @@ public class ShopService {
 
         // Notify store about demand
         for (OrderItemRequest item : items) {
-            restTemplate.postForObject(storeServiceUrl + "/demand", new DemandRequest(item.productId(), item.quantity()), Void.class);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.DEMAND_CREATED_ROUTING_KEY,
+                new DemandCreatedEvent(item.productId(), item.quantity()));
         }
 
         tryCompleteOrder(order);
