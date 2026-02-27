@@ -2,6 +2,7 @@ package com.onlinestore.store.controller;
 
 import com.onlinestore.store.dto.ProductQuantityRequest;
 import com.onlinestore.store.dto.StockRequest;
+import com.onlinestore.store.exception.InsufficientStockException;
 import com.onlinestore.store.persistence.Demand;
 import com.onlinestore.store.persistence.Product;
 import com.onlinestore.store.service.StoreService;
@@ -35,13 +36,9 @@ public class StoreController {
         storeService.stockProduct(request.productId(), request.productName(), request.quantity());
     }
 
-    @PostMapping("/stock/take")
-    public ResponseEntity<Void> takeStock(@RequestBody ProductQuantityRequest request) {
-        boolean success = storeService.takeProduct(request.productId(), request.quantity());
-        if (success) {
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    @PostMapping("/stock/take-all")
+    public void takeStockAll(@RequestBody List<ProductQuantityRequest> requests) {
+        storeService.takeProducts(requests);
+        storeService.notifyStockChanged(requests.stream().map(ProductQuantityRequest::productId).toList());
     }
 }

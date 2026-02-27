@@ -52,7 +52,7 @@ class ShopServiceTest {
         Integer quantity = 2;
 
         // Mock store stock success for take
-        when(restTemplate.postForObject(endsWith("/stock/take"), any(), eq(Void.class)))
+        when(restTemplate.postForObject(endsWith("/stock/take-all"), any(), eq(Void.class)))
                 .thenReturn(null);
 
         shopService.createOrder(List.of(new OrderItemRequest(productId, quantity)));
@@ -63,7 +63,7 @@ class ShopServiceTest {
 
         verify(rabbitTemplate).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.ORDER_COMPLETED_ROUTING_KEY), any(OrderCompletedEvent.class));
         verify(rabbitTemplate).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.DEMAND_CREATED_ROUTING_KEY), any(DemandCreatedEvent.class));
-        verify(restTemplate, times(1)).postForObject(endsWith("/stock/take"), any(), eq(Void.class));
+        verify(restTemplate, times(1)).postForObject(endsWith("/stock/take-all"), any(), eq(Void.class));
     }
 
     @Test
@@ -72,7 +72,7 @@ class ShopServiceTest {
         Integer quantity = 2;
 
         // Mock stock take failure (404)
-        when(restTemplate.postForObject(endsWith("/stock/take"), any(), eq(Void.class)))
+        when(restTemplate.postForObject(endsWith("/stock/take-all"), any(), eq(Void.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
         shopService.createOrder(List.of(new OrderItemRequest(productId, quantity)));
@@ -83,7 +83,7 @@ class ShopServiceTest {
 
         verify(rabbitTemplate, never()).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.ORDER_COMPLETED_ROUTING_KEY), any(OrderCompletedEvent.class));
         verify(rabbitTemplate).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.DEMAND_CREATED_ROUTING_KEY), any(DemandCreatedEvent.class));
-        verify(restTemplate, times(1)).postForObject(endsWith("/stock/take"), any(), eq(Void.class));
+        verify(restTemplate, times(1)).postForObject(endsWith("/stock/take-all"), any(), eq(Void.class));
     }
 
     @Test
@@ -92,7 +92,7 @@ class ShopServiceTest {
         Integer quantity = 2;
 
         // Create a pending order - first attempt fails
-        when(restTemplate.postForObject(endsWith("/stock/take"), any(), eq(Void.class)))
+        when(restTemplate.postForObject(endsWith("/stock/take-all"), any(), eq(Void.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
         shopService.createOrder(List.of(new OrderItemRequest(productId, quantity)));
@@ -102,7 +102,7 @@ class ShopServiceTest {
 
         // Now mock stock added - second attempt succeeds
         reset(restTemplate);
-        when(restTemplate.postForObject(endsWith("/stock/take"), any(), eq(Void.class)))
+        when(restTemplate.postForObject(endsWith("/stock/take-all"), any(), eq(Void.class)))
                 .thenReturn(null);
 
         shopService.tryCompletePendingOrders();
@@ -118,7 +118,7 @@ class ShopServiceTest {
         Integer quantity = 2;
 
         // Stock take fails with 404
-        when(restTemplate.postForObject(endsWith("/stock/take"), any(), eq(Void.class)))
+        when(restTemplate.postForObject(endsWith("/stock/take-all"), any(), eq(Void.class)))
                 .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
 
         shopService.createOrder(List.of(new OrderItemRequest(productId, quantity)));

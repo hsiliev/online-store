@@ -27,7 +27,7 @@ graph TD
     
     User -->|POST /order| Shop
     Shop -->|DemandCreatedEvent| MQ
-    Shop -->|REST: POST /stock/take| Store
+    Shop -->|REST: POST /stock/take-all| Store
     Shop -.->|Orders| DB
     
     Store -.->|Stock & Demand| DB

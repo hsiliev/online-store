@@ -67,16 +67,15 @@ public class ShopService {
         if (order.isCompleted()) return;
 
         // Take products from store
-        for (OrderItem item : order.getItems()) {
-            try {
-                restTemplate.postForObject(
-                        storeServiceUrl + "/stock/take",
-                        new StockTakeRequest(item.getProductId(), item.getQuantity()), Void.class
-                );
-            } catch (HttpClientErrorException e) {
-                // This could happen due to race conditions.
-                return;
-            }
+        List<StockTakeRequest> itemsToTake = order.getItems().stream()
+                .map(item -> new StockTakeRequest(item.getProductId(), item.getQuantity()))
+                .collect(Collectors.toList());
+
+        try {
+            restTemplate.postForObject(storeServiceUrl + "/stock/take-all", itemsToTake, Void.class);
+        } catch (HttpClientErrorException e) {
+            // This could happen due to race conditions or insufficient stock.
+            return;
         }
 
         // Mark as completed

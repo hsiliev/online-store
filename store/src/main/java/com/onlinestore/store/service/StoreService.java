@@ -2,6 +2,8 @@ package com.onlinestore.store.service;
 
 import com.onlinestore.common.RabbitMQConfig;
 import com.onlinestore.common.StockChangedEvent;
+import com.onlinestore.store.dto.ProductQuantityRequest;
+import com.onlinestore.store.exception.InsufficientStockException;
 import com.onlinestore.store.persistence.Demand;
 import com.onlinestore.store.persistence.DemandRepository;
 import com.onlinestore.store.persistence.Product;
@@ -60,7 +62,7 @@ public class StoreService {
             demandRepository.save(new Demand(productId, 0));
         }
         productRepository.incrementStock(productId, quantity);
-        notifyStockChanged(productId);
+        notifyStockChanged(List.of(productId));
     }
 
     @Transactional
@@ -73,16 +75,20 @@ public class StoreService {
     }
 
     @Transactional
-    public boolean takeProduct(Long productId, Integer quantity) {
-        boolean takenFromStock = productRepository.decrementStock(productId, quantity) > 0;
-        if (takenFromStock) {
-            demandRepository.decrementDemand(productId, quantity);
-            notifyStockChanged(productId);
+    public void takeProducts(List<ProductQuantityRequest> requests) {
+        for (ProductQuantityRequest request : requests) {
+            boolean taken = productRepository.decrementStock(request.productId(), request.quantity()) > 0;
+            if (!taken) {
+                // Throwing exception to trigger rollback of all decrements in this transaction
+                throw new InsufficientStockException("Insufficient stock for product " + request.productId());
+            }
+            demandRepository.decrementDemand(request.productId(), request.quantity());
         }
-        return takenFromStock;
     }
 
-    private void notifyStockChanged(Long productId) {
-        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.STOCK_CHANGED_ROUTING_KEY, new StockChangedEvent(productId));
+    public void notifyStockChanged(List<Long> productId) {
+        for (Long id : productId) {
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.STOCK_CHANGED_ROUTING_KEY, new StockChangedEvent(id));
+        }
     }
 }
