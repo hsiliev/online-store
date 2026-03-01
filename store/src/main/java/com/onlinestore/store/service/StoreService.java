@@ -1,13 +1,14 @@
 package com.onlinestore.store.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlinestore.common.RabbitMQConfig;
 import com.onlinestore.common.StockChangedEvent;
 import com.onlinestore.store.dto.ProductQuantityRequest;
 import com.onlinestore.store.exception.InsufficientStockException;
-import com.onlinestore.store.persistence.Demand;
-import com.onlinestore.store.persistence.DemandRepository;
-import com.onlinestore.store.persistence.Product;
-import com.onlinestore.store.persistence.ProductRepository;
+import com.onlinestore.store.persistence.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,17 +20,21 @@ import java.util.stream.Collectors;
 
 @Service
 public class StoreService {
+    private static final Logger log = LoggerFactory.getLogger(StoreService.class);
 
     private final ProductRepository productRepository;
     private final DemandRepository demandRepository;
-    private final RabbitTemplate rabbitTemplate;
+    private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper objectMapper;
 
     public StoreService(ProductRepository productRepository,
                         DemandRepository demandRepository,
-                        RabbitTemplate rabbitTemplate) {
+                        OutboxEventRepository outboxEventRepository,
+                        ObjectMapper objectMapper) {
         this.productRepository = productRepository;
         this.demandRepository = demandRepository;
-        this.rabbitTemplate = rabbitTemplate;
+        this.outboxEventRepository = outboxEventRepository;
+        this.objectMapper = objectMapper;
     }
 
     public List<Product> getAllProducts() {
@@ -76,6 +81,7 @@ public class StoreService {
 
     @Transactional
     public void takeProducts(List<ProductQuantityRequest> requests) {
+        List<Long> productIds = new ArrayList<>();
         for (ProductQuantityRequest request : requests) {
             boolean taken = productRepository.decrementStock(request.productId(), request.quantity()) > 0;
             if (!taken) {
@@ -83,12 +89,21 @@ public class StoreService {
                 throw new InsufficientStockException("Insufficient stock for product " + request.productId());
             }
             demandRepository.decrementDemand(request.productId(), request.quantity());
+            productIds.add(request.productId());
         }
+        notifyStockChanged(productIds);
     }
 
-    public void notifyStockChanged(List<Long> productId) {
-        for (Long id : productId) {
-            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.STOCK_CHANGED_ROUTING_KEY, new StockChangedEvent(id));
+    public void notifyStockChanged(List<Long> productIds) {
+        for (Long id : productIds) {
+            StockChangedEvent event = new StockChangedEvent(id);
+            try {
+                String payload = objectMapper.writeValueAsString(event);
+                outboxEventRepository.save(new OutboxEvent(RabbitMQConfig.EXCHANGE_NAME, RabbitMQConfig.STOCK_CHANGED_ROUTING_KEY, payload));
+                log.info("Saved StockChangedEvent for product ID {} to outbox", id);
+            } catch (JsonProcessingException e) {
+                log.error("Failed to serialize StockChangedEvent for product ID {}", id, e);
+            }
         }
     }
 }
