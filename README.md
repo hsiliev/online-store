@@ -52,5 +52,11 @@ The project root contains several utility scripts for environment management and
 | `stop.sh` | Stops and removes Docker containers, volumes, and orphans. |
 | `restart.sh` | Runs `stop.sh` followed by `start.sh`. |
 | `rebuild.sh` | Performs a clean rebuild of the Docker images and then runs `start.sh`. |
+
+## Integration Tests
+| Script | Description |
+|---|---|
 | `test.sh` | An integration test script using `curl` to verify order fulfillment and stock/demand updates. |
 | `test-deficit.sh` | A specialized test script verifying that pending orders are automatically fulfilled when stock is added in multiple batches, handling deficits correctly. |
+
+Deficit test is also implemented as [Testcontainers](https://testcontainers.com/) test.
