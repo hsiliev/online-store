@@ -59,7 +59,7 @@ class ShopServiceTest {
 
         List<Order> orders = orderRepository.findAll();
         assertEquals(1, orders.size());
-        assertTrue(orders.get(0).isCompleted());
+        assertTrue(orders.getFirst().isCompleted());
 
         verify(rabbitTemplate).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.ORDER_COMPLETED_ROUTING_KEY), any(OrderCompletedEvent.class));
         verify(rabbitTemplate, never()).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.DEMAND_CREATED_ROUTING_KEY), any(DemandCreatedEvent.class));
@@ -108,7 +108,7 @@ class ShopServiceTest {
         shopService.tryCompletePendingOrders();
 
         orders = orderRepository.findAll();
-        assertTrue(orders.get(0).isCompleted());
+        assertTrue(orders.getFirst().isCompleted());
         verify(rabbitTemplate).convertAndSend(eq(RabbitMQConfig.EXCHANGE_NAME), eq(RabbitMQConfig.ORDER_COMPLETED_ROUTING_KEY), any(OrderCompletedEvent.class));
     }
 
@@ -124,6 +124,6 @@ class ShopServiceTest {
         shopService.createOrder(List.of(new OrderItemRequest(productId, quantity)));
 
         List<Order> orders = orderRepository.findAll();
-        assertFalse(orders.get(0).isCompleted());
+        assertFalse(orders.getFirst().isCompleted());
     }
 }
