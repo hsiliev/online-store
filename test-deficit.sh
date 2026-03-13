@@ -47,7 +47,7 @@ curl -s -X POST "$STORE_URL/stock" -H "Content-Type: application/json" -d '{"pro
 curl -s -X POST "$STORE_URL/stock" -H "Content-Type: application/json" -d '{"productId": 2, "quantity": 5}'
 echo ""
 
-sleep 2
+sleep 6
 
 echo -e "\nCheck we have 2 chocolates and 8 bananas in the Store"
 STOCK=$(curl -s "$STORE_URL/stock")
@@ -74,7 +74,7 @@ curl -s -X POST "$STORE_URL/stock" -H "Content-Type: application/json" -d '{"pro
 curl -s -X POST "$STORE_URL/stock" -H "Content-Type: application/json" -d '{"productId": 2, "quantity": 5}'
 echo ""
 
-sleep 2
+sleep 6
 
 echo -e "\nCheck that no demand exists"
 DEMAND=$(curl -s "$STORE_URL/demand")

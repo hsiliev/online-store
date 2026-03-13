@@ -39,6 +39,5 @@ public class StoreController {
     @PostMapping("/stock/take-all")
     public void takeStockAll(@RequestBody List<ProductQuantityRequest> requests) {
         storeService.takeProducts(requests);
-        storeService.notifyStockChanged(requests.stream().map(ProductQuantityRequest::productId).toList());
     }
 }

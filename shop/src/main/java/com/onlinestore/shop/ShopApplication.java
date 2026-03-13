@@ -2,12 +2,14 @@ package com.onlinestore.shop;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 import com.onlinestore.common.RabbitMQConfig;
 
 @SpringBootApplication
+@EnableScheduling
 @Import(RabbitMQConfig.class)
 public class ShopApplication {
     public static void main(String[] args) {
